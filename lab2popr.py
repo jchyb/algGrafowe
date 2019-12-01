@@ -1,7 +1,7 @@
 from dimacs import *
 from collections import deque
 
-(V, L) = loadDirectedWeightedGraph("graphs-lab2/flow/simple")
+(V, L) = loadDirectedWeightedGraph("graphs-lab3/clique20")
 
 def bfs(v,rGraph,wMat):
     d = deque()
@@ -52,4 +52,9 @@ def fordFulkenson(L, u, v):
         fMax += fDelta
     return fMax
 
-print(fordFulkenson(L,0,V-1))
+minCut = 1e14
+for i in range(len(L)):
+    for j in range(len(L)):
+        if i != j:
+            minCut = min(minCut, fordFulkenson(L,0,V-1))
+print(minCut)

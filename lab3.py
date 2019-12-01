@@ -83,8 +83,5 @@ G = [Node() for i in range(V+1)]
 for (x, y, c) in L:
     G[x].addEdge(y, c)
     G[y].addEdge(x, c)
-#display(G)
 
-#a,b = minimumCutPhase(G,6)
-#print(a," ",b)
 print(stoerWagner(G,V))
