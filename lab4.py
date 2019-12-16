@@ -1,6 +1,5 @@
 from dimacs import *
 
-
 class Node:
     def __init__(self):
         self.out = set()
@@ -10,11 +9,11 @@ class Node:
 
 def lexBFS(G, V):
     sets = [{}]
-    sets[0] = set(range(1, V))
+    sets[0] = set(range(1, V+1))
     path = []
     while sets:
         v = sets[-1].pop()
-        print(v," ",sets)
+        #print(v," ",sets)
         path.append(v)
         newsets = []
         for s in sets:
@@ -23,15 +22,13 @@ def lexBFS(G, V):
             for i in s:
                 if G[i].out & {v}:
                     s1 |= {i}
-                    print("s1",G[i].out)
                 else:
                     s2 |= {i}
-                    print("s2")
             if s2:
                 newsets.append(s2)
             if s1:
                 newsets.append(s1)
-        print(newsets)
+        #print(newsets)
         sets = newsets
     return path
 
@@ -47,19 +44,19 @@ def checkLexBFS(G, vs):
             Ni = G[vs[i]].out
             Nj = G[vs[j]].out
 
-        verts = [pi[v] for v in Nj - Ni if pi[v] < i]
-        if verts:
-            viable = [pi[v] for v in Ni - Nj]
-            if not viable or min(verts) <= min(viable):
-                return False
+            verts = [pi[v] for v in Nj - Ni if pi[v] < i]
+            if verts:
+                viable = [pi[v] for v in Ni - Nj]
+                if not viable or min(verts) <= min(viable):
+                    return False
     return True
 
-(V, L) = loadWeightedGraph("graphs-lab3/clique5")
+(V, L) = loadWeightedGraph("graphs-lab4/chordal/house")
 
-G = [Node() for i in range(V )]
+G = [Node() for i in range(V+1)]
 for l in L:
-    G[l[0]-1].addNode(l[1]-1)
-    G[l[1]-1].addNode(l[0]-1)
+    G[l[0]].addNode(l[1])
+    G[l[1]].addNode(l[0])
 
 path = lexBFS(G,V)
 print(path)
