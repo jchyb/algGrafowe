@@ -40,18 +40,16 @@ def isPEO(V):
     for i, v in enumerate(V, 1):
         RN[v] = set()
         for j in range(0, i-1):
-            print(v,V[j])
+            #print(v,V[j])
             if G[V[j]].out & {v}:
                 RN[v] |= {V[j]}
                 parent[v] = V[j]
-                print("r",RN[v])
+                #print("r",RN[v])
     for v in V:
         if(parent[v] != None and not RN[v] - {parent[v]} <= RN[parent[v]]):
-            print(v," ",RN[v]," ",parent[v])
+            #print(v," ",RN[v]," ",parent[v])
             return False
     return True
-
-
 
 
 def checkLexBFS(G, vs):
@@ -93,9 +91,9 @@ def preOrder(v, T, C, RN, parent, createdSets):
     else:
         C[v] = CliqueTreeNode(RN[v] | {v})
         C[v].n.append(C[parent[v]])
-        C[parent[v]].append(C[v])
+        C[parent[v]].n.append(C[v])
         createdSets.append(C[v])
-    print(v," ",T[v].children," ", parent[v]," ", RN[v])
+    #print(v," ",T[v].children," ", parent[v]," ", RN[v])
     for i in T[v].children:
         preOrder(i, T, C, RN, parent, createdSets)
 
@@ -106,7 +104,6 @@ def makeTree(G, PEO):
         RN[v]=set()
         for j in range(0, i-1):
             if G[PEO[j]].out & {v}:
-                #print(v," ",PEO[j])
                 RN[v] |= {PEO[j]}
                 parent[v] = PEO[j]
 
@@ -120,54 +117,73 @@ def makeTree(G, PEO):
     v = PEO[0]
     C[v] = CliqueTreeNode({v})
     createdCliques = [C[v]]
+
     for i in T[v].children:
-        print("ok")
         preOrder(i, T, C, RN, parent, createdCliques)
 
-    # zamiana na frozensety
+    for q in createdCliques:
+        print(q.clique)
+    cliqueValue = {}
+    for i, q in enumerate(createdCliques):
+        cliqueValue[q]=i
+
     pivots = deque()
-    cliqueChain = [createdCliques]
+    cliqueChain = [set(createdCliques)]
     while(len(cliqueChain)<len(createdCliques)):
-        for c, i in enumerate(cliqueChain):
+        for i, c in enumerate(cliqueChain):
             Xc = c
             if(len(Xc)!=1): break
         if len(pivots) == 0:
-            #TODO
-            Vl = Xc[-1]
-            Xc.popLast()
-            cliqueChain.insert(i+1,[Vl])
+            Vl = None
+            qMax = -1
+            for q in Xc:
+                if(qMax<cliqueValue[q]):
+                    Vl = q
+                    qMax = cliqueValue[q]
+
+            Xc -= {Vl}
+            cliqueChain.insert(i+1,{Vl})
             V = {Vl}
             pass
         else:
             x = pivots.pop()
-            V = {}
+            V = set()
             for q in createdCliques:
-                if(x & q.clique): V |= q
+                if({x} & q.clique): V |= {q}
             Xa = None
             Xai = 0
             Xb = None
             Xbi = 0
-            for q, j in enumerate(cliqueChain):
+            for j, q in enumerate(cliqueChain):
                 if(V & q):
                     if(Xa == None):
-                        Xa = q
-                        Xai = j
-                    Xb = q
-                    Xbi = j
-
-
+                        Xa, Xai = q, j
+                    Xb, Xbi = q, j
+            cliqueChain.insert(Xai+1,Xa - V)
+            Xa &= V
+            cliqueChain.insert(Xbi,Xb & V)
+            Xb -= V
             pass
         for v in V:
             for u in v.n:
                 if u not in V:
-                    pivots.update((v.clique & u.clique))
+                    pivots.extend(v.clique & u.clique)
                     u.n.remove(v)
                     v.n.remove(u)
 
+    for v in PEO:
+        state = 0
+        for q in cliqueChain:
+            print(q)
+            if next(iter(q)).clique & {v}:
+                if state == 0: state = 1
+                if state == 2: return False
+            else:
+                if state == 1: state = 2
 
-
-    for c in createdCliques:
-        print(c)
+    return True
+    #for c in createdCliques:
+      #  print(c)
 
 
 (V, L) = loadWeightedGraph("graphs-lab4/chordal/example-fig5")
