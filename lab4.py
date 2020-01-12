@@ -1,3 +1,5 @@
+from collections import deque
+
 from dimacs import *
 
 
@@ -15,7 +17,6 @@ def lexBFS(G, V):
     path = []
     while sets:
         v = sets[-1].pop()
-        # print(v," ",sets)
         path.append(v)
         newsets = []
         for s in sets:
@@ -33,6 +34,24 @@ def lexBFS(G, V):
         # print(newsets)
         sets = newsets
     return path
+def isPEO(V):
+    RN = [None] * (len(V) + 1)
+    parent = [None] * (len(V) + 1)
+    for i, v in enumerate(V, 1):
+        RN[v] = set()
+        for j in range(0, i-1):
+            print(v,V[j])
+            if G[V[j]].out & {v}:
+                RN[v] |= {V[j]}
+                parent[v] = V[j]
+                print("r",RN[v])
+    for v in V:
+        if(parent[v] != None and not RN[v] - {parent[v]} <= RN[parent[v]]):
+            print(v," ",RN[v]," ",parent[v])
+            return False
+    return True
+
+
 
 
 def checkLexBFS(G, vs):
@@ -60,51 +79,98 @@ class TreeNode:
 
     def addChild(self, child):
         self.children.append(child)
+class CliqueTreeNode:
+    def __init__(self, cliqueSet):
+        self.n = []
+        self.clique = cliqueSet
 
 
-def preOrder(v, T, C, RN, parent):
+def preOrder(v, T, C, RN, parent, createdSets):
+
     if RN[v] == C[parent[v]]:
-        C[parent[v]] |= {v}
+        C[parent[v]].clique |= {v}
         C[v] = C[parent[v]]
     else:
-        C[v] = set(RN[v])
-        C[v] |= {v}
-    print(v," ",T[v].children)
+        C[v] = CliqueTreeNode(RN[v] | {v})
+        C[v].n.append(C[parent[v]])
+        C[parent[v]].append(C[v])
+        createdSets.append(C[v])
+    print(v," ",T[v].children," ", parent[v]," ", RN[v])
     for i in T[v].children:
-        preOrder(i, T, C, RN, parent)
-
+        preOrder(i, T, C, RN, parent, createdSets)
 
 def makeTree(G, PEO):
-    RN = [set()] * (len(PEO) + 1)
+    RN = [None] * (len(PEO) + 1)
     parent = [None] * (len(PEO) + 1)
     for i, v in enumerate(PEO, 1):
-        for j in range(1, i):
+        RN[v]=set()
+        for j in range(0, i-1):
             if G[PEO[j]].out & {v}:
-                print(v," ",PEO[j])
+                #print(v," ",PEO[j])
                 RN[v] |= {PEO[j]}
                 parent[v] = PEO[j]
 
     T = [TreeNode() for i in  range(len(PEO)+1)]
     for v in PEO:
         if parent[v]:
-            #print(parent[v]," ",v)
             T[parent[v]].addChild(v)
 
     C = [None] * (len(PEO)+1)
 
     v = PEO[0]
-    C[v] = {v}
-
-
+    C[v] = CliqueTreeNode({v})
+    createdCliques = [C[v]]
     for i in T[v].children:
         print("ok")
-        preOrder(i, T, C, RN, parent)
+        preOrder(i, T, C, RN, parent, createdCliques)
 
-    for s in C:
-        print(s)
+    # zamiana na frozensety
+    pivots = deque()
+    cliqueChain = [createdCliques]
+    while(len(cliqueChain)<len(createdCliques)):
+        for c, i in enumerate(cliqueChain):
+            Xc = c
+            if(len(Xc)!=1): break
+        if len(pivots) == 0:
+            #TODO
+            Vl = Xc[-1]
+            Xc.popLast()
+            cliqueChain.insert(i+1,[Vl])
+            V = {Vl}
+            pass
+        else:
+            x = pivots.pop()
+            V = {}
+            for q in createdCliques:
+                if(x & q.clique): V |= q
+            Xa = None
+            Xai = 0
+            Xb = None
+            Xbi = 0
+            for q, j in enumerate(cliqueChain):
+                if(V & q):
+                    if(Xa == None):
+                        Xa = q
+                        Xai = j
+                    Xb = q
+                    Xbi = j
 
 
-(V, L) = loadWeightedGraph("graphs-lab4/interval/example-fig5")
+            pass
+        for v in V:
+            for u in v.n:
+                if u not in V:
+                    pivots.update((v.clique & u.clique))
+                    u.n.remove(v)
+                    v.n.remove(u)
+
+
+
+    for c in createdCliques:
+        print(c)
+
+
+(V, L) = loadWeightedGraph("graphs-lab4/chordal/example-fig5")
 
 G = [Node() for i in range(V + 1)]
 for l in L:
@@ -114,4 +180,5 @@ for l in L:
 path = lexBFS(G, V)
 print(path)
 print(checkLexBFS(G, path))
+#print(isPEO(path))
 makeTree(G, path)
