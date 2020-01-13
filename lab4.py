@@ -116,7 +116,7 @@ def makeTree(G, PEO):
 
     v = PEO[0]
     C[v] = CliqueTreeNode({v})
-    createdCliques = [C[v]]
+    createdCliques = []
 
     for i in T[v].children:
         preOrder(i, T, C, RN, parent, createdCliques)
@@ -147,6 +147,7 @@ def makeTree(G, PEO):
             pass
         else:
             x = pivots.pop()
+            print("x",x)
             V = set()
             for q in createdCliques:
                 if({x} & q.clique): V |= {q}
@@ -159,17 +160,28 @@ def makeTree(G, PEO):
                     if(Xa == None):
                         Xa, Xai = q, j
                     Xb, Xbi = q, j
-            cliqueChain.insert(Xai+1,Xa - V)
-            Xa &= V
-            cliqueChain.insert(Xbi,Xb & V)
+            cliqueChain.insert(Xai+1,Xa & V)
+            Xa -= V
+            print("Xa", Xa)
+            cliqueChain.insert(Xbi+1,Xb & V)
             Xb -= V
+            if len(Xb)==0:
+                cliqueChain.pop(Xbi+2)
+            if len(Xa)==0:
+                cliqueChain.pop(Xai)
+
+            print("Xb",Xb)
             pass
+        print(cliqueChain)
+        print("pivots", pivots)
         for v in V:
             for u in v.n:
                 if u not in V:
                     pivots.extend(v.clique & u.clique)
+                    print("v.n", v.n, "u.n", u.n)
                     u.n.remove(v)
                     v.n.remove(u)
+                    print("v.n", v.n, "u.n", u.n)
 
     for v in PEO:
         state = 0
