@@ -3,6 +3,34 @@
 # Load graph in the DIMACS ascii format + weights
 
 
+def loadCNFFormula( name ):
+  """Load a CNF formula in the DIMACS ascii format from 
+     the file "name" and return it as a list of clauses
+     Returns (V,F)
+     V -- highest variable number
+     F -- list of clauses"""
+
+  V = 0
+  L = []  
+
+  f = open( name, "r" )
+  lines = f.readlines()
+  for l in lines:
+    s = l.split()
+    if(len(s) < 1): continue
+    if( s[0] == "c" ):
+      print(s)
+      continue
+    elif( s[0] == "p" ):
+      V = int(s[2])
+    else:
+      clause = [int(v) for v in s[:-1]]
+      L.append(clause)
+
+  f.close()
+  return (V,L)
+
+
 
 def loadWeightedGraph( name ):
   """Load a graph in the DIMACS ascii format (with weights) from 

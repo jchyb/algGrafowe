@@ -107,7 +107,7 @@ def makeTree(G, PEO):
                 RN[v] |= {PEO[j]}
                 parent[v] = PEO[j]
 
-    T = [TreeNode() for i in  range(len(PEO)+1)]
+    T = [TreeNode() for i in range(len(PEO)+1)]
     for v in PEO:
         if parent[v]:
             T[parent[v]].addChild(v)
