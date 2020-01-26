@@ -34,39 +34,42 @@ def SAT2(V, L):
     SSSVal = {}
     t = 0
     for S in SCC:
-        #print("sss")
+        print(t)
         T = set()
         for v in S:
             SSS[v] = t
-            #print(v)
             if (-v) in T:
-                return (False, None)
+                return False, None
             T |= {v}
-            REP[t]=v
-            #print(T)
+            REP[t] = v
         t += 1
     H = nx.DiGraph()
-    for (a,b) in G.edges:
-        if not SSS[a]==SSS[b] and not H.has_edge(SSS[a], SSS[b]):
+    H.add_nodes_from(range(1,t))
+    for (a, b) in G.edges:
+        if SSS[a] != SSS[b] and not H.has_edge(SSS[a], SSS[b]):
             H.add_edge(SSS[a], SSS[b])
 
     O = topological_sort(H)
     print(O)
     for s in O:
-        if(not SSS[-REP[s]] in SSSVal):
-            SSSVal[s] = True
-        else: SSSVal[s] = False
+        if SSS[-REP[s]] not in SSSVal:
+            SSSVal[s] = False
+        else:
+            SSSVal[s] = not (SSS[-REP[s]])
 
+    for v in range(-V, V + 1):
+        if v != 0:
+            print(v, " ", SSS[v])
     print(SSSVal)
-    for v in range(1, V+1):
-        print(v, " ", SSSVal[SSS[v]])
+    for v in range(-V, V+1):
+        if v != 0:
+            print(v, " ", SSSVal[SSS[v]])
     for l in L:
         if not (SSSVal[SSS[l[0]]] or SSSVal[SSS[l[1]]]):
             print("False")
-    return (True, None)
+    return True, None
 
 
 
-# (V, L) = dimacs.loadWeightedGraph("graphs-lab2/flow/clique5")
-(V, L) = dimacs.loadCNFFormula("sat/simple_sat")
+(V, L) = dimacs.loadCNFFormula("sat/sat100_200")
 print(SAT2(V, L))
